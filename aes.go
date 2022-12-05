@@ -272,10 +272,10 @@ func main() {
 	sbox = sboxLocal
 	// region - Rjindael Sbox
 
-	totalRound := 11
+	totalRound := 10
 
 	// region - Compute Round Constant for Key Expansion
-	preComputeRoundConstant(2 * totalRound)
+	preComputeRoundConstant(totalRound)
 	// region - Compute Round Constant for Key Expansion
 
 	plainText := []byte("Two One Nine Two")
@@ -298,7 +298,7 @@ func main() {
 	roundConstant := 0
 	for {
 		// docs - Expand key for 4*totalRound times
-		if len(words) == totalRound*4 {
+		if len(words) == (totalRound+1)*4 {
 			break
 		}
 		last := len(words) - 1
@@ -338,10 +338,7 @@ func main() {
 
 	// region - Encryption
 	round := 0
-	for {
-		if round == totalRound {
-			break
-		}
+	for round <= totalRound {
 		if round > 0 {
 			matrix.Subtitute()
 			log.Println("After subtitute", round)
@@ -351,12 +348,13 @@ func main() {
 			log.Println("After shift", round)
 			matrix.Print()
 
-			if round+1 != totalRound {
+			if round < totalRound {
 				matrix.MixColumn()
 				log.Println("After mixCol", round)
 				matrix.Print()
 			}
 		}
+
 		key = joinMatrix(words[(round * 4) : (round*4)+4]...)
 		keyMatrix := &Matrix{}
 		keyMatrix.Init()
@@ -371,6 +369,3 @@ func main() {
 	}
 	// region - Encryption
 }
-
-// 54776f204f6e65204e696e652054776f
-// 5468617473206d79204b756e67204675
