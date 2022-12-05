@@ -106,7 +106,36 @@ func (m *Matrix) MixColumn() {
 		{1, 1, 2, 3},
 		{3, 1, 1, 2},
 	}
+
+	multiply := func(a byte, b byte) byte {
+		if b == 1 {
+			return a
+		}
+		tmp := (a << 1) & 0xff
+		if b == 2 {
+			if a < 128 {
+				return tmp
+			} else {
+				return tmp ^ 0x1b
+			}
+		}
+		if b == 3 {
+			if a < 128 {
+				return tmp ^ a
+			} else {
+				return (tmp ^ 0x1b) ^ a
+			}
+		}
+		panic("aneh")
+	}
+	newRow := [][]byte{}
+	n := 0
+	for n < 4 {
+		newRow = append(newRow, []byte{})
+		n++
+	}
 	for i, row := range m.data {
+		nowRow := []byte{}
 		for k, b := range row {
 			rowMultiply := fixedMatrix[i]
 			columnMultiply := []byte{}
@@ -115,21 +144,22 @@ func (m *Matrix) MixColumn() {
 				columnMultiply = append(columnMultiply, m.data[n][k])
 				n++
 			}
-			log.Println(i, k, rowMultiply, columnMultiply)
-			newValue := b * rowMultiply[i]
-			log.Printf("%02x %02x %b", b, rowMultiply[i], newValue)
+			// log.Println(i, k, rowMultiply, columnMultiply)
+			newValue := multiply(b, rowMultiply[i])
+			// log.Printf("%02x %02x %b", b, rowMultiply[i], newValue)
 			for c, v := range columnMultiply {
 				if v == b {
 					continue
 				}
-				log.Printf("%02x %02x %b %d", v, rowMultiply[c], (v * rowMultiply[c]), (v * rowMultiply[c]))
-				newValue = newValue ^ (v * rowMultiply[c])
+				// log.Printf("%02x %02x %b %d", v, rowMultiply[c], (v * rowMultiply[c]), multiply(v, rowMultiply[c]))
+				newValue = newValue ^ multiply(v, rowMultiply[c])
 			}
-			log.Printf("%02x\n", newValue)
-
-			m.data[i][k] = newValue
+			// log.Printf("%02x\n", newValue)
+			nowRow = append(nowRow, newValue)
 		}
+		newRow[i] = nowRow
 	}
+	m.data = newRow
 }
 
 func (m *Matrix) Print() {
@@ -236,13 +266,17 @@ func shiftRow(shiftCount uint8, row []byte) []byte {
 }
 
 func main() {
+	// region - Rjindael Sbox
 	sboxLocal := &SBox{}
 	sboxLocal.Init()
 	sbox = sboxLocal
+	// region - Rjindael Sbox
 
-	totalRound := 2
+	totalRound := 11
 
+	// region - Compute Round Constant for Key Expansion
 	preComputeRoundConstant(2 * totalRound)
+	// region - Compute Round Constant for Key Expansion
 
 	plainText := []byte("Two One Nine Two")
 	key := []byte("Thats my Kung Fu")
@@ -253,6 +287,7 @@ func main() {
 	encodedString = hex.EncodeToString(key)
 	log.Println(encodedString)
 
+	// region - Key Expansion
 	words := [][]byte{}
 
 	words = append(words, key[0:4])
@@ -262,6 +297,7 @@ func main() {
 
 	roundConstant := 0
 	for {
+		// docs - Expand key for 4*totalRound times
 		if len(words) == totalRound*4 {
 			break
 		}
@@ -274,6 +310,8 @@ func main() {
 			words = append(words, matrixXor(words[last], words[last-3]))
 		}
 	}
+	// region - Key Expansion
+
 	log.Println(len(words))
 	buffer := []byte{}
 	for i, b := range words {
@@ -291,10 +329,14 @@ func main() {
 	}
 	log.Println("Finished")
 
+	// region - Prepare plaintext as matrix
 	matrix := &Matrix{}
 	matrix.Init()
 	matrix.Fill(plainText)
 	matrix.Print()
+	// region - Prepare plaintext as matrix
+
+	// region - Encryption
 	round := 0
 	for {
 		if round == totalRound {
@@ -309,9 +351,11 @@ func main() {
 			log.Println("After shift", round)
 			matrix.Print()
 
-			matrix.MixColumn()
-			log.Println("After mixCol", round)
-			matrix.Print()
+			if round+1 != totalRound {
+				matrix.MixColumn()
+				log.Println("After mixCol", round)
+				matrix.Print()
+			}
 		}
 		key = joinMatrix(words[(round * 4) : (round*4)+4]...)
 		keyMatrix := &Matrix{}
@@ -325,6 +369,7 @@ func main() {
 
 		round++
 	}
+	// region - Encryption
 }
 
 // 54776f204f6e65204e696e652054776f
