@@ -17,11 +17,11 @@ def generateKeyTable(key):
   alphabetList = generateAlphabetList()
   # Append Key to Table
   for letter in key:
-    if letter not in keyList:
+    if letter not in keyList and letter != 'j':
       keyList.append(letter)
   # Append Alphabet to Table
   for letter in alphabetList:
-    if letter not in keyList:
+    if letter not in keyList and letter != 'j':
       keyList.append(letter)
   # Turn into 2D 5x5 list
   while keyList != []:
