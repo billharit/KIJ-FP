@@ -17,7 +17,9 @@ def generateKeyTable(key):
   alphabetList = generateAlphabetList()
   # Append Key to Table
   for letter in key:
-    if letter not in keyList and letter != 'j':
+    if letter =='j' and 'i' not in keyList:
+      keyList.append('i')
+    elif letter not in keyList and letter != 'j':
       keyList.append(letter)
   # Append Alphabet to Table
   for letter in alphabetList:
