@@ -45,7 +45,7 @@ def search(keyTable, char):
 
 def next_column(keyTable, char):
   """
-  This Functions Does the next column algorithm if its on same column
+  This Functions Does the next column algorithm if its on same row
   """
   x, y = search(keyTable, char)
   yNext = (y+1) % 5
@@ -53,7 +53,7 @@ def next_column(keyTable, char):
 
 def next_row(keyTable, char):
   """
-  This Functions Does the next row algorithm if its on same row
+  This Functions Does the next row algorithm if its on same column
   """
   x, y = search(keyTable, char)
   xNext = (x+1) % 5
