@@ -169,12 +169,12 @@ func (m *Matrix) MixColumn() {
 		// a7 = bit 7 from a
 		// b0 = bit 0 from b
 		var p byte
-		// r := byte(1<<4 | 1<<3 | 1<<1 | 1<<0)
-		r := byte(1<<4 | 1<<0)
+		r := byte(1<<4 | 1<<3 | 1<<1 | 1<<0)
+		// r := byte(1<<4 | 1<<0)
 		for i := 0; i < 8; i++ {
 			ab0 := a &^ (b&1 - 1)  // ab0 = Mul(a, b0)
 			ra7 := r &^ (a>>7 - 1) // ra7 = Mul(R, a7)
-
+			
 			// p = Add(p, ab0)
 			// a = Sub(Mul(a, x), ra7)
 			// b = Div(b, x)
@@ -444,9 +444,10 @@ func encryptECBBlock(plainText []byte, key []byte) []byte {
 			words = append(words, matrixXor(words[last], words[last-3]))
 		}
 	}
+
 	// region - Key Expansion
-	for _, w := range words {
-		log.Printf("%+v\n", hex.EncodeToString(w))
+	for i, w := range words {
+		log.Printf("%+v\n", hex.EncodeToString(w), i, "key expanded")
 	}
 
 	// region - Prepare plaintext as matrix
@@ -606,7 +607,7 @@ func encryptECB(input []byte, key []byte) []byte {
 
 	for {
 		block := input[iteration*16 : (iteration+1)*16]
-		log.Println(block)
+		log.Println(block, "block")
 		encrpytedBlock := encryptECBBlock(block, key)
 		result = append(result, encrpytedBlock...)
 		iteration++
@@ -635,7 +636,7 @@ var debugMode bool = true
 
 func main() {
 	plainText := "Two One Nine Two"
-	key := "Thats my Kung Fu"
+	key := "Thats Yu Kung Fu"
 	fmt.Println("Plain text:", plainText, hex.EncodeToString([]byte(plainText)))
 	fmt.Println("Key:", key, hex.EncodeToString([]byte(key)))
 
