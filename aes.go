@@ -295,17 +295,6 @@ func (m *Matrix) String() string {
 	return result
 }
 
-// func Pretty(input []byte) string {
-// 	result := ""
-// 	for i := 0; i < len(input); i++ {
-// 		for j := 0; j < len(input); j++ {
-// 			result += fmt.Sprintf("%02x", m.data[j][i])
-// 		}
-// 		result += fmt.Sprintf(" ")
-// 	}
-// 	return result
-// }
-
 func (m *Matrix) AsByte() []byte {
 	result := []byte{}
 	for i := 0; i < len(m.data); i++ {
@@ -380,25 +369,6 @@ func subtituteOperation(matrix []byte) {
 		log.Printf("Changing %02x -> %02x", v, sbox.data[v])
 		matrix[i] = sbox.data[v]
 	}
-}
-
-func shiftMatrix(matrix []byte) {
-	for i, _ := range matrix {
-		if i%4 == 0 {
-			shiftCount := i / 4
-			if shiftCount > 0 {
-				shiftedRow := shiftRow(uint8(shiftCount), matrix[i:i+4])
-				for k, v := range shiftedRow {
-					matrix[i+k] = v
-				}
-			}
-		}
-	}
-}
-
-func shiftRow(shiftCount uint8, row []byte) []byte {
-	row = append(row, row...)
-	return row[shiftCount : 3+shiftCount]
 }
 
 func encryptECBBlock(plainText []byte, key []byte) []byte {
