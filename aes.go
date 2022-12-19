@@ -174,7 +174,7 @@ func (m *Matrix) MixColumn() {
 		for i := 0; i < 8; i++ {
 			ab0 := a &^ (b&1 - 1)  // ab0 = Mul(a, b0)
 			ra7 := r &^ (a>>7 - 1) // ra7 = Mul(R, a7)
-			
+
 			// p = Add(p, ab0)
 			// a = Sub(Mul(a, x), ra7)
 			// b = Div(b, x)
@@ -199,9 +199,7 @@ func (m *Matrix) MixColumn() {
 				} else {
 					newValue = newValue ^ multiply(fixedMatrix[i][n], m.data[n][k])
 				}
-				log.Printf("Mult %02x x %02x\n", fixedMatrix[i][n], m.data[n][k])
 			}
-			log.Printf("%02x\n", newValue)
 			nowRow = append(nowRow, newValue)
 		}
 		newRow[i] = nowRow
@@ -446,9 +444,6 @@ func encryptECBBlock(plainText []byte, key []byte) []byte {
 	}
 
 	// region - Key Expansion
-	for i, w := range words {
-		log.Printf("%+v\n", hex.EncodeToString(w), i, "key expanded")
-	}
 
 	// region - Prepare plaintext as matrix
 	matrix := &Matrix{}
@@ -600,14 +595,13 @@ func encryptECB(input []byte, key []byte) []byte {
 
 	// pad input
 	for len(input)%16 > 0 {
-		input = append(input, byte('d'))
+		input = append(input, byte(0))
 	}
 
 	log.Println("Input len after pad", len(input), string(input))
 
 	for {
 		block := input[iteration*16 : (iteration+1)*16]
-		log.Println(block, "block")
 		encrpytedBlock := encryptECBBlock(block, key)
 		result = append(result, encrpytedBlock...)
 		iteration++
@@ -632,27 +626,18 @@ func decryptECB(input []byte, key []byte) []byte {
 	return result
 }
 
-var debugMode bool = true
+var debugMode bool = false
 
 func main() {
-	plainText := "Two One Nine Two"
-	key := "Thats Yu Kung Fu"
+	plainText := "Two One Nine TwoTwo One Nine Tw"
+	key := "1234123412341234"
 	fmt.Println("Plain text:", plainText, hex.EncodeToString([]byte(plainText)))
 	fmt.Println("Key:", key, hex.EncodeToString([]byte(key)))
 
-	// aBcdabCdabcDAbcd
-	// encrypted := encryptECBBlock([]byte(plainText), []byte(key))
-	// decrypted := decryptECBBlock(encrypted, []byte(key))
-
-	// fmt.Println("")
-	// fmt.Println("Encrypted hex", hex.EncodeToString(encrypted))
-	// fmt.Println("Plaintext after decrypt (hex):", hex.EncodeToString(decrypted))
-	// fmt.Println("Plaintext after decrypt:", string(decrypted))
-
 	encryptedCBC := encryptECB([]byte(plainText), []byte(key))
-	log.Println("Encrypted cbc len", len(encryptedCBC), hex.EncodeToString(encryptedCBC))
+	log.Println("Encrypted ECB (len)", len(encryptedCBC), hex.EncodeToString(encryptedCBC))
 	decryptedCBC := decryptECB(encryptedCBC, []byte(key))
 	fmt.Println("Plaintext after decrypt ECB (byte):", decryptedCBC)
 	fmt.Println("Plaintext after decrypt ECB (hex):", hex.EncodeToString(decryptedCBC))
-	fmt.Println("Pllaintext after decrypt ECB:", string(decryptedCBC))
+	fmt.Println("Plaintext after decrypt ECB:", string(decryptedCBC))
 }
